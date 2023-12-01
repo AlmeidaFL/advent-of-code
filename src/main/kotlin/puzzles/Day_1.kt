@@ -21,25 +21,6 @@ class Day_1: PuzzleDay {
 
         return number
     }
-//
-//    override fun puzzleTwo(input: String): Any {
-//        val number = input
-//            .split("\r\n")
-//            .map {
-//                    it ->
-//                var digitsWords = Regex("(one|two|three|four|five|six|seven|eight|nine)")
-//                var a = Regex("([1-9]*|${digitsWords.pattern}*)*").findAll(it).toList()
-//                    var x = a.map { x -> x.value }.reduce { acc, s ->  acc + s}
-//                x
-//            }
-//            .sumOf { s ->
-//                val number = if(s.length > 1) "${s.first()}${s.last()}" else "${s.first()}${s.first()}"
-//                number.toInt()
-//            }
-//
-//        return number
-//    }
-
 
     override fun puzzleTwo(input: String): Any? {
         val number = input
@@ -77,16 +58,4 @@ fun replaceAll(word: String): String{
         newWord = newWord.replace(key, value.toString())
     }
     return newWord
-}
-fun substituteWordNumber(word: String) = when(word){
-    "one" -> 1
-    "two" -> 2
-    "three" -> 3
-    "four" -> 4
-    "five" -> 5
-    "six" -> 6
-    "seven" -> 7
-    "eight" -> 8
-    "nine" -> 9
-    else -> -1
 }
