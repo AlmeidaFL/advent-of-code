@@ -1,5 +1,5 @@
 interface PuzzleDay {
-    fun puzzleOne(input: String): Any
+    fun puzzleOne(input: String): Any?
 
-    fun puzzleTwo(input: String): Any
+    fun puzzleTwo(input: String): Any?
 }
