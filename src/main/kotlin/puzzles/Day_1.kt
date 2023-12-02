@@ -10,8 +10,7 @@ class Day_1: PuzzleDay {
     override fun puzzleOne(input: String): Any? {
         val number = input
             .split("\r\n")
-            .map {
-                it ->
+            .map { it ->
                 Regex("[1-9]+").findAll(it).map { x -> x.value }.reduce { acc, s ->  acc + s}
             }
             .sumOf { s ->
@@ -26,11 +25,9 @@ class Day_1: PuzzleDay {
         val number = input
             .split("\r\n")
             .map { it ->
-                var a = replaceAll(it)
-                a
+                replaceAll(it)
             }
-            .map {
-                    it ->
+            .map { it ->
                 Regex("[1-9]").findAll(it).toList().map { x -> x.value }.reduce { acc, s ->  acc + s}
             }
             .sumOf { s ->

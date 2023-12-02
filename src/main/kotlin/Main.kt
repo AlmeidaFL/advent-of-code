@@ -1,14 +1,13 @@
 fun main() {
-//    val diretorioTrabalho = System.getProperty("user.dir")
-//    println("Diretório de Trabalho: $diretorioTrabalho")
-    var puzzle = 1
+    var puzzle = 2
     val puzzleInstance = Class
         .forName(
             puzzle.toFullClassName())
         .getConstructor()
         .newInstance() as PuzzleDay
 
-    println(puzzleInstance.puzzleOne(FileReader.readFile("${puzzle.toLowerClassName()}/input_1.txt")))
+
+//    println(puzzleInstance.puzzleOne(FileReader.readFile("${puzzle.toLowerClassName()}/input_1.txt")))
     println(puzzleInstance.puzzleTwo(FileReader.readFile("${puzzle.toLowerClassName()}/input_2.txt")))
 }
 
