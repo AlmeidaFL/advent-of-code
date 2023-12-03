@@ -1,5 +1,5 @@
 fun main() {
-    var puzzle = 2
+    var puzzle = 3
     val puzzleInstance = Class
         .forName(
             puzzle.toFullClassName())
@@ -8,7 +8,7 @@ fun main() {
 
 
 //    println(puzzleInstance.puzzleOne(FileReader.readFile("${puzzle.toLowerClassName()}/input_1.txt")))
-    println(puzzleInstance.puzzleTwo(FileReader.readFile("${puzzle.toLowerClassName()}/input_2.txt")))
+    println(puzzleInstance.puzzleTwo(FileReader.readFile("${puzzle.toLowerClassName()}/input_1.txt")))
 }
 
 fun Int.toFullClassName() = this.toClassName().toPackage()
