@@ -2,24 +2,24 @@ package puzzles
 
 import PuzzleDay
 
-class Day_4: PuzzleDay {
+class Day_4 : PuzzleDay {
     override fun puzzleOne(input: String): Any? {
         var totalSum = 0
         var cardLists = input
             .split("\r\n")
-            .map{it ->
+            .map { it ->
                 removeUntil(it)
             }
-            .forEach {line ->
+            .forEach { line ->
                 var (winningNumber, numbersObtained) = getDivisionList(line)
 
                 var double = false
                 var sumD = 0
                 numbersObtained.forEach {
-                    if(winningNumber.contains(it) && !double){
+                    if (winningNumber.contains(it) && !double) {
                         sumD += 1
                         double = true
-                    }else if(winningNumber.contains(it) && double){
+                    } else if (winningNumber.contains(it) && double) {
                         sumD *= 2
                     }
                 }
@@ -34,7 +34,7 @@ class Day_4: PuzzleDay {
 
         var cardLists = input
             .split("\r\n")
-            .map{it ->
+            .map { it ->
                 removeUntil(it)
             }
             .forEachIndexed { index, line ->
@@ -42,36 +42,34 @@ class Day_4: PuzzleDay {
 
                 var numbersOfMatch = 0
                 numbersObtained.forEach {
-                    if(winningNumber.contains(it)){
+                    if (winningNumber.contains(it)) {
                         numbersOfMatch += 1
                     }
                 }
 
                 var realIndex = index + 1
                 var cardName = "Card ${realIndex}"
-                if(!map.containsKey(cardName)){
-                    map.put(cardName, 0)
-                }else if(map.containsKey(cardName)){
-                    for(j in 1..map[cardName]!!){
-                        for(i in (realIndex+1)..(realIndex+numbersOfMatch)){
-                            var newCardName = "Card ${i}"
-                            if(!map.containsKey(newCardName)){
-                                map[newCardName] = 1
-                            }else if(map.containsKey(newCardName)){
-                                map[newCardName] = map[newCardName]!! + 1
-                            }
+
+                fun addNumberOfCopies() {
+                    for (i in (realIndex + 1)..(realIndex + numbersOfMatch)) {
+                        var newCardName = "Card ${i}"
+                        if (!map.containsKey(newCardName)) {
+                            map[newCardName] = 1
+                        } else if (map.containsKey(newCardName)) {
+                            map[newCardName] = map[newCardName]!! + 1
                         }
                     }
                 }
 
-                for(i in (realIndex+1)..(realIndex+numbersOfMatch)){
-                    var newCardName = "Card ${i}"
-                    if(!map.containsKey(newCardName)){
-                        map[newCardName] = 1
-                    }else if(map.containsKey(newCardName)){
-                        map[newCardName] = map[newCardName]!! + 1
+                if (!map.containsKey(cardName)) {
+                    map.put(cardName, 0)
+                } else if (map.containsKey(cardName)) {
+                    for (j in 1..map[cardName]!!) {
+                        addNumberOfCopies() // Add for the card copies
                     }
                 }
+
+                addNumberOfCopies() // Add for the original card
             }
 
         var sum = 0
@@ -79,34 +77,21 @@ class Day_4: PuzzleDay {
             sum += u
         }
 
-        sum += map.count()
+        sum += map.count() // Count the number of original cards too
         return sum
     }
 
-    fun removeUntil(cardList: String): String{
+    fun removeUntil(cardList: String): String {
         var list = cardList.toMutableList()
-        do{
+        do {
             var char = list[0]
             list.removeFirst()
-        }while(char != ':')
+        } while (char != ':')
 
         return String(list.toCharArray())
     }
 
-    fun removeUntilWithCardName(cardList: String): Pair<String,String>{
-        var list = cardList.toMutableList()
-        var cardName = mutableListOf<Char>()
-        do{
-            var char = list[0]
-            cardName.add(list.removeFirst())
-        }while(char != ':')
-
-        cardName.removeLast()
-
-        return Pair(String(cardName.toCharArray()), String(list.toCharArray()))
-    }
-
-    fun getDivisionList(cardLists: String): Pair<List<String>, List<String>>{
+    fun getDivisionList(cardLists: String): Pair<List<String>, List<String>> {
         var list = cardLists.split("|").toMutableList()
 
         var list_1 = Regex("\\d+").findAll(list[0]).map { it.value }.toList()
@@ -114,16 +99,4 @@ class Day_4: PuzzleDay {
 
         return Pair(list_1, list_2)
     }
-
-    class Node(var cardName: String) {
-        var copies = 1
-
-        var listOfChild = mutableListOf<Node>()
-
-        override fun equals(other: Any?): Boolean {
-            if(other !is Node) return false
-            return other.cardName == this.cardName
-        }
-    }
-
 }
