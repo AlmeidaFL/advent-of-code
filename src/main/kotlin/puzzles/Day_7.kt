@@ -14,7 +14,7 @@ class Day_7: PuzzleDay {
         Hand.HighHand()::class.java to 7,
     )
 
-    val charMap = mapOf<Char, Int>(
+    val cardMap = mapOf<Char, Int>(
         '2' to 1,
         '3' to 2,
         '4' to 3,
@@ -30,7 +30,7 @@ class Day_7: PuzzleDay {
         'A' to 14
     )
 
-    val charMapJoker = mapOf<Char, Int>(
+    val cardJokerMap = mapOf<Char, Int>(
         'J' to 0,
         '2' to 1,
         '3' to 2,
@@ -99,7 +99,7 @@ class Day_7: PuzzleDay {
     }
 
     fun getComparator(withJokerRule: Boolean = false): Comparator<Hand>{
-        var usedMap = if(!withJokerRule) charMap else charMapJoker
+        var usedMap = if(!withJokerRule) cardMap else cardJokerMap
         val handComparator = Comparator<Hand> { cardOne, cardTwo ->
             if (cardOne::class.java == cardTwo::class.java) {
                 for ((index, char) in cardOne.card.withIndex()) {
@@ -128,33 +128,33 @@ class Day_7: PuzzleDay {
 
         companion object {
             fun getHandType(card: String, jokerFunction: ((MutableList<Pair<Char, Int>>, Int?) -> Unit)? = null): Hand {
-                val charWithInt = mutableMapOf<Char, Int>()
+                val cardWithValue = mutableMapOf<Char, Int>()
                 for (value in card) {
-                    if (!charWithInt.containsKey(value)) {
-                        charWithInt[value] = 1
+                    if (!cardWithValue.containsKey(value)) {
+                        cardWithValue[value] = 1
                     } else {
-                        charWithInt[value] = charWithInt[value]!! + 1
+                        cardWithValue[value] = cardWithValue[value]!! + 1
                     }
                 }
-                val list = charWithInt.toList().sortedByDescending {
+                val cardList = cardWithValue.toList().sortedByDescending {
                     it.second
                 }.toMutableList()
 
-                if (charWithInt.count() > 1) {
-                    jokerFunction?.invoke(list, charWithInt['J'])
+                if (cardWithValue.count() > 1) {
+                    jokerFunction?.invoke(cardList, cardWithValue['J'])
                 }
 
-                return if (list[0].second == 5) {
+                return if (cardList[0].second == 5) {
                     FiveOfKind().also { it.card = card }
-                } else if (list[0].second == 4 && list[1].second == 1) {
+                } else if (cardList[0].second == 4 && cardList[1].second == 1) {
                     FourOfKind().also { it.card = card }
-                } else if (list[0].second == 3 && list[1].second == 2) {
+                } else if (cardList[0].second == 3 && cardList[1].second == 2) {
                     FullHouse().also { it.card = card }
-                } else if (list[0].second == 3) {
+                } else if (cardList[0].second == 3) {
                     ThreeOfKind().also { it.card = card }
-                } else if (list[0].second == 2 && list[1].second == 2) {
+                } else if (cardList[0].second == 2 && cardList[1].second == 2) {
                     TwoPair().also { it.card = card }
-                } else if (list[0].second == 2 && list[1].second == 1 && list[2].second == 1) {
+                } else if (cardList[0].second == 2 && cardList[1].second == 1 && cardList[2].second == 1) {
                     OnePair().also { it.card = card }
                 } else {
                     HighHand().also { it.card = card }
