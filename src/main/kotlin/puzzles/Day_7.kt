@@ -4,14 +4,14 @@ import PuzzleDay
 
 class Day_7: PuzzleDay {
 
-    val cardMap = mapOf<Card, Int>(
-        Card.FiveOfKind() to 1,
-        Card.FourOfKind() to 2,
-        Card.FullHouse() to 3,
-        Card.ThreeOfKind() to 4,
-        Card.TwoPair() to 5,
-        Card.OnePair() to 6,
-        Card.HighCard() to 7,
+    val cardMap = mapOf(
+        Card.FiveOfKind()::class.java to 1,
+        Card.FourOfKind()::class.java to 2,
+        Card.FullHouse()::class.java to 3,
+        Card.ThreeOfKind()::class.java to 4,
+        Card.TwoPair()::class.java to 5,
+        Card.OnePair()::class.java to 6,
+        Card.HighCard()::class.java to 7,
     )
 
     val charMap = mapOf<Char, Int>(
@@ -48,102 +48,25 @@ class Day_7: PuzzleDay {
 
     override fun puzzleOne(input: String): Any? {
         var splittedInput = input.split("\r\n")
-        var fiveList = mutableListOf<Card>()
-        var fourList = mutableListOf<Card>()
-        var fullList = mutableListOf<Card>()
-        var threeList = mutableListOf<Card>()
-        var twoList = mutableListOf<Card>()
-        var oneList = mutableListOf<Card>()
-        var highList = mutableListOf<Card>()
-
-        splittedInput.forEach {
-            var (cardString, bind) = it.split(" ")
-            var card = Card.checkType(cardString).also {
-                it.bind = bind
-            }
-            when {
-                card is Card.FiveOfKind -> fiveList.add(card)
-                card is  Card.FourOfKind -> fourList.add(card)
-                card is  Card.FullHouse -> fullList.add(card)
-                card is  Card.ThreeOfKind -> threeList.add(card)
-                card is  Card.TwoPair -> twoList.add(card)
-                card is  Card.OnePair -> oneList.add(card)
-                card is  Card.HighCard -> highList.add(card)
+        var cardList = mutableListOf<Card>().apply {
+            splittedInput.forEach { it ->
+                var (cardString, bind) = it.split(" ")
+                var card = Card.checkType(cardString).also {
+                    it.bind = bind
+                }
+                add(card)
             }
         }
 
-        var fiveListSorted = fiveList.sortedWith { cardOne, cardTwo ->
-            return@sortedWith compareCard(cardOne, cardTwo)
-        }
-
-        var fourLissSorted = fourList.sortedWith { cardOne, cardTwo ->
-            return@sortedWith compareCard(cardOne, cardTwo)
-        }
-
-        var fullListSorted = fullList.sortedWith { cardOne, cardTwo ->
-            return@sortedWith compareCard(cardOne, cardTwo)
-        }
-
-        var threeListSorted = threeList.sortedWith { cardOne, cardTwo ->
-            return@sortedWith compareCard(cardOne, cardTwo)
-        }
-
-        var twoListSorted = twoList.sortedWith { cardOne, cardTwo ->
-            return@sortedWith compareCard(cardOne, cardTwo)
-        }
-
-        var oneListSorted = oneList.sortedWith { cardOne, cardTwo ->
-            return@sortedWith compareCard(cardOne, cardTwo)
-        }
-
-        var highListSorted = highList.sortedWith { cardOne, cardTwo ->
-            return@sortedWith compareCard(cardOne, cardTwo)
-        }
-
-        var index = 1
-        var sum = 0
-        highListSorted.forEachIndexed { rank, card ->
-            sum += card.bind.toInt() * (index)
-            index += 1
-        }
-        oneListSorted.forEachIndexed { rank, card ->
-            sum += card.bind.toInt() * (index)
-            index += 1
-        }
-        twoListSorted.forEachIndexed { rank, card ->
-            sum += card.bind.toInt() * (index)
-            index += 1
-        }
-        threeListSorted.forEachIndexed { rank, card ->
-            sum += card.bind.toInt() * (index)
-            index += 1
-        }
-        fullListSorted.forEachIndexed { rank, card ->
-            sum += card.bind.toInt() * (index)
-            index += 1
-        }
-        fourLissSorted.forEachIndexed { rank, card ->
-            sum += card.bind.toInt() * (index)
-            index += 1
-        }
-        fiveListSorted.forEachIndexed { rank, card ->
-            sum += card.bind.toInt() * (index)
-            index += 1
-        }
-
-        return sum
-    }
-
-    fun compareCard(cardOne: Card, cardTwo: Card): Int{
-        for ((index, char) in cardOne.card.withIndex()) {
-            if(charMap[char]!! > charMap[cardTwo.card[index]]!!){
-                return 1
-            }
-            if(charMap[char]!! < charMap[cardTwo.card[index]]!!){
-                return -1
+        var cardsSum = 0
+        cardList.apply {
+            sortWith(getComparator())
+            forEachIndexed { index, card ->
+                cardsSum += card.bind.toInt() * (index + 1)
             }
         }
-        return 1
+
+        return cardsSum
     }
 
     fun compareCardJoker(cardOne: Card, cardTwo: Card): Int{
@@ -259,6 +182,29 @@ class Day_7: PuzzleDay {
         return sum
     }
 
+    fun getComparator(): Comparator<Card>{
+        val handComparator = Comparator<Card> { cardOne, cardTwo ->
+            if (cardOne::class.java == cardTwo::class.java) {
+                for ((index, char) in cardOne.card.withIndex()) {
+                    if (charMap[char]!! > charMap[cardTwo.card[index]]!!) {
+                        return@Comparator 1
+                    }
+                    if (charMap[char]!! < charMap[cardTwo.card[index]]!!) {
+                        return@Comparator -1
+                    }
+                }
+            }
+
+            if(cardMap[cardOne::class.java]!! > cardMap[cardTwo::class.java]!!){
+                return@Comparator -1
+            }else{
+                return@Comparator 1
+            }
+        }
+
+        return handComparator
+    }
+
     sealed class Card {
         var card: String = ""
         var bind: String = ""
@@ -277,9 +223,6 @@ class Day_7: PuzzleDay {
                     it.second
                 }
 
-                if(card == "JJQ34"){
-                    var x = 1
-                }
                 return if(list[0].second == 5){
                     FiveOfKind().also { it.card = card }
                 }else if(list[0].second == 4 && list[1].second == 1){
@@ -310,30 +253,13 @@ class Day_7: PuzzleDay {
                     it.second
                 }.toMutableList()
 
-                if(!charWithInt.containsKey('J')
-                    || charWithInt.count() == 1){
-                    return if(list[0].second == 5){
-                        FiveOfKind().also { it.card = card }
-                    }else if(list[0].second == 4 && list[1].second == 1){
-                        FourOfKind().also { it.card = card }
-                    }else if(list[0].second == 3 && list[1].second == 2){
-                        FullHouse().also { it.card = card }
-                    }else if(list[0].second == 3){
-                        ThreeOfKind().also { it.card = card }
-                    }else if(list[0].second == 2 && list[1].second == 2){
-                        TwoPair().also { it.card = card }
-                    }else if(list[0].second == 2 && list[1].second == 1 && list[2].second == 1){
-                        OnePair().also { it.card = card }
-                    }else{
-                        HighCard().also { it.card = card }
+                if(charWithInt.count() > 1) {
+                    var jokerValue = charWithInt['J']
+                    list.removeIf {
+                        it.first == 'J'
                     }
+                    list[0] = Pair(list[0].first, list[0].second + (jokerValue ?: 0))
                 }
-
-                var jokerValue = charWithInt['J']
-                list.removeIf {
-                    it.first == 'J'
-                }
-                list[0] = Pair(list[0].first, list[0].second + jokerValue!!)
                 return if(list[0].second == 5){
                     FiveOfKind().also { it.card = card }
                 }else if(list[0].second == 4 && list[1].second == 1){
