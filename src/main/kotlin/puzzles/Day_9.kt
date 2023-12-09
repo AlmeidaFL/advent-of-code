@@ -1,17 +1,14 @@
 package puzzles
 
 import PuzzleDay
-import kotlin.math.absoluteValue
 
 class Day_9: PuzzleDay {
     override fun puzzleOne(input: String): Any? {
          return input
             .split("\r\n")
             .map {
-                Regex("-?\\d+").findAll(it).map { it.value.toLong() }.toList()
-            }
-             .map {
-                 getNextNumber(it)
+                val sequence = Regex("-?\\d+").findAll(it).map { it.value.toLong() }.toList()
+                getNextNumber(sequence)
              }.reduce { acc, l ->  acc + l}
     }
 
@@ -35,10 +32,8 @@ class Day_9: PuzzleDay {
         return input
             .split("\r\n")
             .map {
-                Regex("-?\\d+").findAll(it).map { it.value.toLong() }.toList()
-            }
-            .map {
-                getNextNumberBackwards(it)
+                val sequence = Regex("-?\\d+").findAll(it).map { it.value.toLong() }.toList()
+                getNextNumberBackwards(sequence)
             }.reduce { acc, l ->  acc + l}
     }
 
