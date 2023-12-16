@@ -12,61 +12,100 @@ enum class Direction{
     DOWN,
     NONE
 }
+data class SpecialDirection(val position: Position, val direction: Direction){
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is SpecialDirection) return false
+
+        return other.position == this.position && other.direction == this.direction
+    }
+
+    override fun hashCode(): Int {
+        var result = position.hashCode()
+        result = 31 * result + direction.hashCode()
+        return result
+    }
+}
 
 class Day_16: PuzzleDay {
     val beamStack = Stack<Beam>()
     val specialChars = listOf('\\', '/', '|', '-')
-
+    val specialCharDirectionFlux = mutableSetOf<SpecialDirection>()
+    var copyMatrizVisual: List<MutableList<Char>>? = null
 
     override fun puzzleOne(input: String): Any? {
         val matriz = input
             .split("\r\n")
-            .map { it.toList() }
+            .map { it.toMutableList() }
+
+        copyMatrizVisual = matriz.map {
+            it.toMutableList()
+        }
+
         val positionsSet = mutableSetOf<Position>()
         val initialBeam = Beam(Position(0,0), Direction.RIGHT)
         beamStack.add(initialBeam)
         do{
             val beam = beamStack.pop()
-            navigateBeam(beam, matriz, positionsSet)
+            navigateBeam(beam, matriz, positionsSet, copyMatrizVisual!!)
         }while(!beamStack.empty())
 
-        return positionsSet.count()
+
+        copyMatrizVisual!!.print()
+        return copyMatrizVisual!!.sumOf { subList ->
+            subList.count{ it == 'X'}
+        }
     }
 
-
-    fun navigateBeam(beam: Beam, matriz: List<List<Char>>, positionsSet: MutableSet<Position>){
-        if(isValidXAndY(beam.position, matriz[0].count(), matriz.count())){
-            positionsSet.add(beam.position)
-            if (hasSpecialReflector(beam.position, matriz)) {
-                // verifies initial position
+    fun List<MutableList<Char>>.print(){
+        this.forEach { it ->
+            it.forEach {char ->
+                if(specialChars.contains(char)){
+                    print('.')
+                }else{
+                    print(char)
+                }
             }
+            println()
+        }
+        println()
+    }
 
+    fun directionAlreadyTooked(position: Position, direction: Direction)
+        = specialCharDirectionFlux.contains(SpecialDirection(position, direction))
+
+    fun navigateBeam(beam: Beam, matriz: List<MutableList<Char>>, positionsSet: MutableSet<Position>, matrizCopy: List<MutableList<Char>>){
             var continueBeamWalking = true
             while (continueBeamWalking) {
-                var columnToIncrement = 0
-                var lineToIncrement = 0
-                when (beam.directionToGo) {
-                    Direction.UP -> lineToIncrement--
-                    Direction.DOWN -> lineToIncrement++
-                    Direction.LEFT -> columnToIncrement--
-                    Direction.RIGHT -> columnToIncrement++
-                    Direction.NONE -> throw Exception("Direction none shouldn't happen")
-                }
-                beam.position.apply {
-                    this.x += columnToIncrement
-                    this.y += lineToIncrement
-                }
-                positionsSet.add(beam.position)
-                if (hasSpecialReflector(beam.position, matriz)) {
-                    continueBeamWalking = ruleBeam(beam, matriz)
-                }
+                if(isValidXAndY(beam.position, matriz[0].count(), matriz.count())){ //Constraints of matriz
+                    positionsSet.add(beam.position)
+                    matrizCopy!![beam.line][beam.column] = 'X'
+                    if (hasSpecialReflector(beam.position, matriz)) {
+                        if(directionAlreadyTooked(beam.position, beam.directionToGo)) break //Avoid beam loops
+                        continueBeamWalking = ruleBeam(beam, matriz)
+                        if(!continueBeamWalking) break // If reflector is '-' and direction is right for example will continue on loop
+                    }
+                    var columnToIncrement = 0
+                    var lineToIncrement = 0
+                    when (beam.directionToGo) {
+                        Direction.UP -> lineToIncrement--
+                        Direction.DOWN -> lineToIncrement++
+                        Direction.LEFT -> columnToIncrement--
+                        Direction.RIGHT -> columnToIncrement++
+                        Direction.NONE -> throw Exception("Direction none shouldn't happen")
+                    }
+                    beam.position.apply {
+                        this.x += columnToIncrement
+                        this.y += lineToIncrement
+                    }
+                }else break
             }
-        }
-
     }
 
     fun ruleBeam(beam: Beam, matriz: List<List<Char>>): Boolean{
         val specialReflector = matriz[beam.line][beam.column]
+
+        specialCharDirectionFlux.add(SpecialDirection(beam.position, beam.directionToGo))
 
         if((beam.directionToGo == Direction.RIGHT || beam.directionToGo == Direction.LEFT)
             && specialReflector == '|') {
@@ -138,7 +177,7 @@ class Day_16: PuzzleDay {
         }
         else if(beam.directionToGo == Direction.LEFT && specialReflector == '\\'){
             beamStack.add(
-                Beam(Position(beam.column, beam.line-1), Direction.DOWN)
+                Beam(Position(beam.column, beam.line-1), Direction.UP)
             )
             return false
         }
@@ -150,7 +189,90 @@ class Day_16: PuzzleDay {
         specialChars.contains(matriz[position.y][position.x])
 
     override fun puzzleTwo(input: String): Any? {
-        TODO("Not yet implemented")
+        val matriz = input
+            .split("\r\n")
+            .map { it.toMutableList() }
+
+
+        val listOfEnergy = mutableListOf<Int>()
+
+        //FirstLine to down
+        for(i in 0..<matriz[0].count()) {
+            specialCharDirectionFlux.clear()
+            copyMatrizVisual = matriz.map {
+                it.toMutableList()
+            }
+            val positionsSet = mutableSetOf<Position>()
+            val initialBeam = Beam(Position(i, 0), Direction.DOWN)
+            beamStack.add(initialBeam)
+            do {
+                val beam = beamStack.pop()
+                navigateBeam(beam, matriz, positionsSet, copyMatrizVisual!!)
+            } while (!beamStack.empty())
+
+            listOfEnergy += copyMatrizVisual!!.sumOf { subList ->
+                subList.count { it == 'X' }
+            }
+        }
+
+        //Last Line to up
+        for(i in 0..<matriz[0].count()) {
+            specialCharDirectionFlux.clear()
+            copyMatrizVisual = matriz.map {
+                it.toMutableList()
+            }
+            val positionsSet = mutableSetOf<Position>()
+            val initialBeam = Beam(Position(i, matriz.count()-1), Direction.UP)
+            beamStack.add(initialBeam)
+            do {
+                val beam = beamStack.pop()
+                navigateBeam(beam, matriz, positionsSet, copyMatrizVisual!!)
+            } while (!beamStack.empty())
+
+            listOfEnergy += copyMatrizVisual!!.sumOf { subList ->
+                subList.count { it == 'X' }
+            }
+        }
+
+        //First column to right
+        for(i in 0..<matriz.count()) {
+            specialCharDirectionFlux.clear()
+            copyMatrizVisual = matriz.map {
+                it.toMutableList()
+            }
+            val positionsSet = mutableSetOf<Position>()
+            val initialBeam = Beam(Position(0, i), Direction.RIGHT)
+            beamStack.add(initialBeam)
+            do {
+                val beam = beamStack.pop()
+                navigateBeam(beam, matriz, positionsSet, copyMatrizVisual!!)
+            } while (!beamStack.empty())
+
+            listOfEnergy += copyMatrizVisual!!.sumOf { subList ->
+                subList.count { it == 'X' }
+            }
+        }
+
+        //Last column to left
+        for(i in 0..<matriz.count()) {
+            specialCharDirectionFlux.clear()
+            copyMatrizVisual = matriz.map {
+                it.toMutableList()
+            }
+            val positionsSet = mutableSetOf<Position>()
+            val initialBeam = Beam(Position(matriz[0].count()-1, i), Direction.LEFT)
+            beamStack.add(initialBeam)
+            do {
+                val beam = beamStack.pop()
+                navigateBeam(beam, matriz, positionsSet, copyMatrizVisual!!)
+            } while (!beamStack.empty())
+
+            listOfEnergy += copyMatrizVisual!!.sumOf { subList ->
+                subList.count { it == 'X' }
+            }
+        }
+
+        return listOfEnergy.max()
     }
 
     class Beam(var position: Position, var directionToGo: Direction = Direction.NONE) {

@@ -3,7 +3,6 @@ package puzzles
 import PuzzleDay
 
 class Day_10: PuzzleDay {
-    val chars = arrayOf('⎾','⏋','⎿', '⏌', '－', '|')
     val startingPoint = 'S'
     override fun puzzleOne(input: String): Any? {
         var matriz = input
@@ -60,19 +59,68 @@ class Day_10: PuzzleDay {
                 steps++
             }
         }
+
+        println(verifiesObjectsInsidePolygon(matriz))
         matriz.print()
         return ++steps
     }
 
+    fun verifiesObjectsInsidePolygon(matriz: List<MutableList<Char>>): Int{
+        var sumOfInside = -1
+        matriz.forEachIndexed {lineIndex, line ->
+            line.forEachIndexed { index, char ->
+                var qtdDeRetas = 0
+                if(char == '┐' || char == '┌' || char == '│' || char == '┘' || char == '└' || char == '─'){
+                }
+                else {
+                    var previousChar = 'q'
+                    for (i in index..<matriz[0].count() - 2) {
+                        val nextChar = matriz[lineIndex][i + 1]
+                        previousChar = if(matriz[lineIndex][i] != '─') matriz[lineIndex][i] else previousChar
+                        if(nextChar == '│'){
+                            qtdDeRetas++
+                        }
+                        if(nextChar == '┘' && previousChar == '┌'){
+                            qtdDeRetas++
+                        }
+                        if(nextChar == '┐' && previousChar == '└'){
+                            qtdDeRetas++
+                        }
+//                        if((nextChar == '┘' || nextChar == 'S') && previousChar != '─'){
+//                            qtdDeRetas++
+//                        }
+//                        else if((nextChar == '┐'|| nextChar == 'S') && previousChar != '─' ){
+//                            qtdDeRetas++
+//                        }
+//                        else if((nextChar == '┌' || nextChar == 'S')&& previousChar == '│'){
+//
+//                        }
+//                        else if(nextChar == '│' || nextChar == '┌' || nextChar == '└'){
+//                            qtdDeRetas++
+//                        }
+                    }
+                    if (qtdDeRetas != 0 && qtdDeRetas % 2 == 1) {
+                        matriz[lineIndex][index] = '*'
+                        sumOfInside++
+                    }
+                }
+            }
+        }
+        return sumOfInside
+    }
+
+    val chars = arrayOf('┌','┐','└', '─', '│', '┘')
+
     fun substituteChar(position: Position, matriz: List<MutableList<Char>>){
         val actualChar = matriz[position.y][position.x]
         val substitute = when(actualChar){
-            'F' -> '⎾'
-            '7' -> '⏋'
-            'L' -> '⎿'
-            'J' -> '⏌'
-            '-' -> '－'
+            'F' -> '┌'
+            '7' -> '┐'
+            'L' -> '└'
+            'J' -> '┘'
+            '-' -> '─'
             '.' -> ' '
+            '|' -> '│'
             else -> actualChar
         }
         matriz[position.y][position.x] = substitute
@@ -87,6 +135,9 @@ class Day_10: PuzzleDay {
             it.forEach {char ->
                 if(chars.contains(char)){
                     print("\u001B[31m$char\u001B[0m")
+                }
+                else if(char == '*'){
+                    print("\u001B[33m$char\u001B[0m")
                 }else{
                     print(char)
                 }
