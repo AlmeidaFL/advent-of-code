@@ -1,14 +1,13 @@
 fun main() {
-    var puzzle = 4
+    var puzzle = 18
     val puzzleInstance = Class
         .forName(
             puzzle.toFullClassName())
         .getConstructor()
         .newInstance() as PuzzleDay
 
-
-//    println(puzzleInstance.puzzleOne(FileReader.readFile("${puzzle.toLowerClassName()}/input_1.txt")))
-    println(puzzleInstance.puzzleTwo(FileReader.readFile("${puzzle.toLowerClassName()}/input_1.txt")))
+    println(puzzleInstance.puzzleOne(FileReader.readFile("${puzzle.toLowerClassName()}/input_1.txt")))
+//    println(puzzleInstance.puzzleTwo(FileReader.readFile("${puzzle.toLowerClassName()}/input_1.txt")))
 }
 
 fun Int.toFullClassName() = this.toClassName().toPackage()

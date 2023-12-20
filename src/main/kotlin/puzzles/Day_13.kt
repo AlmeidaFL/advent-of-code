@@ -1,57 +1,70 @@
 package puzzles
 
 import PuzzleDay
+import puzzles.commons.Position
+import puzzles.commons.isValidXAndY
 import puzzles.commons.print
-import kotlin.math.ceil
 
 class Day_13: PuzzleDay {
     override fun puzzleOne(input: String): Any? = input
             .split("\r\n")
             .joinToString("\n")
             .split("\n\n")
-            .map{it.lines()}
-            .map {
-                getNumberOfPastIndexes(it)
+            .map{
+                it.lines()
+            }
+            .mapIndexed { index, strings ->
+                getMatrizReflection(strings, index)
             }.reduce { acc, i ->  acc + i}
 
-    fun getNumberOfPastIndexes(matriz: List<String>): Int{
-        for(line in matriz){
-           val ceil = ceil(line.count()/2.0).toInt()
-            repeat(ceil){ index ->
-                val endIndexStart = if(index == 0) 1 else 0
-                val sum = if(index == 0) 0 else 1
-                for(column in index..<ceil){
-                    val leftReflection = line.subSequence(index, column+1)
-                    val rightReflection = line.subSequence(column+1, (column+endIndexStart)*2+sum).reversed().toString()
-                    if(leftReflection == rightReflection){
-                        val numbersOfSteps = checkPossibleReflection(matriz, index, column+1, leftReflection.length)
-                        if(numbersOfSteps != -1) return numbersOfSteps
-                    }
-                }
-            }
+    fun getMatrizReflection(matriz: List<String>, index: Int): Int{
+
+        var columnsVertical = getNumberOfColumnsBeforeReflection(matriz) //Handle matriz in normal position
+        var columnsHorizontal = getNumberOfColumnsBeforeReflection(matriz.transpose()) // Handle matriz tranposed, horizontal case
+
+        if(columnsVertical > -1){
+            return columnsVertical
+        }else if(columnsVertical == -1 && columnsHorizontal != -1){
+            return columnsHorizontal * 100
         }
 
         matriz.print()
+        throw Exception("Should not happen. Reflections are equal. Horizontal: $columnsHorizontal, Vertical $columnsVertical, Index $index")
+    }
+
+    private fun getNumberOfColumnsBeforeReflection(matriz: List<String>): Int{
+        for (i in 0..<matriz[0].count() - 1) {
+            if (checkPossibleReflection(matriz, i, i + 1)){
+                return i+1
+            }
+        }
         return -1
     }
 
-    private fun checkPossibleReflection(matriz: List<String>, leftInit: Int, rightInit: Int, length: Int): Int{
-        for(i in 0..<matriz.count()){
-            for(j in 0..<length){
-                if(matriz[i][leftInit+j] != matriz[i][rightInit+j]){
-                    return -1
+    fun checkPossibleReflection(matriz: List<String>, columnA: Int, columnB: Int): Boolean{
+        var columnsEqual = true
+
+        if(isValidXAndY(Position(columnA, 0), matriz[0].count(), matriz.count())
+                && isValidXAndY(Position(columnB, 0), matriz[0].count(), matriz.count())) {
+            for (i in 0..<matriz.count()) {
+                if (matriz[i][columnA] != matriz[i][columnB]) {
+                    columnsEqual = false
                 }
+            }
+
+            if (columnsEqual) {
+                columnsEqual = checkPossibleReflection(matriz, columnA - 1, columnB + 1)
             }
         }
 
-        return leftInit
+        return columnsEqual
     }
 
     fun List<String>.transpose(): List<String>{
         var list = mutableListOf<String>()
 
-        for(i in this[0].length-1..0){
-            var stringBuilder = StringBuilder()
+        for(i in this[0].length-1 downTo 0){
+            val stringBuilder = StringBuilder()
             for(j in 0..<this.count()){
                 stringBuilder.append(this[j][i])
             }
