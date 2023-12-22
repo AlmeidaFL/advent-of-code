@@ -1,5 +1,5 @@
 fun main() {
-    var puzzle = 18
+    var puzzle = 20
     val puzzleInstance = Class
         .forName(
             puzzle.toFullClassName())

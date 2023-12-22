@@ -52,15 +52,22 @@ class Day_20: PuzzleDay {
                }
             }
 
-        repeat(3){
+        repeat(1){
             pulseProxy.addToQueue(PacketPulse("", "broadcaster", PulseType.LOW))
             do {
                 val modulePacket = pulseProxy.consumeModulePacket()
+                for(i in pulseProxy.queueToReceive){
+                    modulesMap[i.moduleToReceive]
+                        ?.also{
+                            it.receivePulse(i, pulseProxy)
+                        }
+                }
+                pulseProxy.queueToReceive.clear()
                 modulesMap[modulePacket.moduleToReceive]
                     ?.also {
-                        it.receivePulse(modulePacket, pulseProxy)
+                        it.sendPulses(pulseProxy)
                     }
-            }while (pulseProxy.queue.isNotEmpty())
+            }while (pulseProxy.queueToSend.isNotEmpty())
             println()
         }
 
@@ -70,27 +77,35 @@ class Day_20: PuzzleDay {
     class PulseProxy{
         var lowerPulseConter = 0
         var highPulseCounter = 0
+        var queueToReceive = mutableListOf<PacketPulse>()
+        val queueToSend = mutableListOf<PacketPulse>()
 
-        val queue = mutableListOf<PacketPulse>()
         fun addToQueue(packetPulse: PacketPulse){
             println("${packetPulse.moduleThatSented} -${packetPulse.pulseType}-> ${packetPulse.moduleToReceive}")
             when(packetPulse.pulseType){
                 PulseType.HIGH -> highPulseCounter++
                 PulseType.LOW -> lowerPulseConter++
             }
-            queue.add(packetPulse)
+            queueToReceive.add(packetPulse)
+            queueToSend.add(packetPulse)
         }
 
-        fun consumeModulePacket() = queue.removeFirst()
+        fun consumeModulePacket() = queueToSend.removeFirst()
     }
 
     abstract class Module(val name: String, val modulesToSend: List<String>){
         abstract fun receivePulse(packetPulse: PacketPulse, pulseProxy: PulseProxy)
+        abstract fun sendPulses(pulseProxy: PulseProxy)
     }
 
     class BroadCaster(name: String, modulesToSend: List<String>)
         : Module(name, modulesToSend){
+
         override fun receivePulse(packetPulse: PacketPulse, pulseProxy: PulseProxy) {
+
+        }
+
+        override fun sendPulses(pulseProxy: PulseProxy) {
             modulesToSend.forEach {module ->
                 pulseProxy.addToQueue(
                     PacketPulse(name, module, PulseType.LOW)
@@ -112,7 +127,9 @@ class Day_20: PuzzleDay {
 
         override fun receivePulse(packetPulse: PacketPulse, pulseProxy: PulseProxy){
             stateOfModules[packetPulse.moduleThatSented] = packetPulse.pulseType
+        }
 
+        override fun sendPulses(pulseProxy: PulseProxy){
             val pulseToSend = if(stateOfModules.all { it.value == PulseType.HIGH }) PulseType.LOW else PulseType.HIGH
 
             modulesToSend.forEach { module ->
@@ -126,11 +143,21 @@ class Day_20: PuzzleDay {
     class FlipFlop(name: String, modulesToSend: List<String>)
         : Module(name, modulesToSend){
         var on = false
+        var lastPulseReceived = PulseType.LOW
 
-        override fun receivePulse(packetPulse: PacketPulse, pulseProxy: PulseProxy){
-            if(packetPulse.pulseType == PulseType.HIGH) return
+        override fun receivePulse(packetPulse: PacketPulse, pulseProxy: PulseProxy) {
+            if(packetPulse.pulseType == PulseType.HIGH) {
+                lastPulseReceived = PulseType.HIGH
+                return
+            }
 
+            pulseProxy.addToQueue(packetPulse)
+            lastPulseReceived = PulseType.LOW
             on = !on
+        }
+
+        override fun sendPulses(pulseProxy: PulseProxy){
+            if(lastPulseReceived == PulseType.HIGH) return
 
             val pulseToSend = if(on) PulseType.HIGH else PulseType.LOW
 
