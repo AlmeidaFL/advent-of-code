@@ -1,7 +1,6 @@
 package puzzles
 
 import PuzzleDay
-import puzzles.commons.Position
 import puzzles.commons.isValidXAndY
 import puzzles.commons.print
 
@@ -44,8 +43,8 @@ class Day_13: PuzzleDay {
     fun checkPossibleReflection(matriz: List<String>, columnA: Int, columnB: Int): Boolean{
         var columnsEqual = true
 
-        if(isValidXAndY(Position(columnA, 0), matriz[0].count(), matriz.count())
-                && isValidXAndY(Position(columnB, 0), matriz[0].count(), matriz.count())) {
+        if(isValidXAndY(columnA, 0, matriz[0].count(), matriz.count())
+                && isValidXAndY(columnB, 0, matriz[0].count(), matriz.count())) {
             for (i in 0..<matriz.count()) {
                 if (matriz[i][columnA] != matriz[i][columnB]) {
                     columnsEqual = false
