@@ -15,6 +15,7 @@ build/
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
+*.DotSettings.user
 
 ### Eclipse ###
 .apt_generated
@@ -48,3 +49,6 @@ bin/
 *.jar
 *.properties
 grandlew
+
+2024/AdventOfCode/Inputs/*
+2024/.idea/*
